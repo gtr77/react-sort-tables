@@ -1,0 +1,12 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+li {
+  list-style-type: none;
+}
+table,
+th,
+td {
+  border: 1px solid black;
+}
