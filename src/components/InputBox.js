@@ -1,10 +1,17 @@
-export const InputBox = ({ addItem, textBoxValue, handleChange }) => {
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+
+export const InputBox = ({ textBoxValue, handleChange }) => {
   return (
-    <div>
-      <h3>Welcome InputBox</h3>
-      <h3>{textBoxValue}</h3>
-      <input type="text" onChange={handleChange} value={textBoxValue} />
-      <button onClick={addItem}>Add</button>
-    </div>
+    <Box style={{ marginBottom: "20px" }}>
+      <TextField
+        label="Cells"
+        id="outlined-size-small"
+        defaultValue={textBoxValue}
+        size="medium"
+        onChange={handleChange}
+        placeholder="max 12 boxes"
+      />
+    </Box>
   );
 };

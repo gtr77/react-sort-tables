@@ -2,6 +2,7 @@ import "./styles.css";
 import { useState, useEffect } from "react";
 import { EditBox } from "./components/EditBox";
 import { InputBox } from "./components/InputBox";
+import { ErrorAmount } from "./components/ErrorAmount";
 
 export default function App() {
   const [names, setNames] = useState([
@@ -9,17 +10,33 @@ export default function App() {
     { id: 1, name: "Camila" },
     { id: 2, name: "Johnama" }
   ]);
-  const [defaultNames, setDefaultValues] = useState([
-    {
-      id: null,
-      name: "GT",
-      editable: false
-    }
+  const [items, setItems] = useState([
+    /*     [33, 20, 37],
+    ["Gustavo", "Camila", "Andrea"],
+    ["Software Eng", "Design", "kitchen"] */
+    ["Camila", 20, "Dev"],
+    ["Gustavo", 33, "Software Eng"],
+    ["Andrea", 37, "kitchen"]
   ]);
-  const [selectedAmount, setSelectedAmount] = useState("");
+  const [defaultNames, setDefaultValues] = useState([]);
+  const [selectedAmount, setSelectedAmount] = useState();
   const [textBoxValue, setTextBoxValue] = useState("");
   const [editBoxText, setEditBoxText] = useState("");
-  //const [editable, setEditable] = useState(false);
+
+  const deepLinkUrl = (direction, columnName) => {
+    let currentUrl = window.location.href.split("?")[0];
+    let urlWithParams = `${currentUrl}sortBy=${direction}&column=${columnName}`;
+    console.log(urlWithParams);
+    window.location.href = urlWithParams;
+  };
+
+  useEffect(() => {
+    setItems(items);
+    console.table("TESTING: ", items);
+    if (selectedAmount) {
+      console.log("Final data updated , invoke your function");
+    }
+  }, [selectedAmount]);
 
   useEffect(() => {
     let mutableNames = [...names];
@@ -52,109 +69,108 @@ export default function App() {
     }
   };
 
-  const editItem = (id) => {
-    let namesArray = [...names];
-    let editInput = namesArray[id].name;
-    namesArray[id].editable = true;
-    setNames(namesArray);
-    setEditBoxText(editInput);
-    //setEditable(!editable);
-    //setEdit(!shouldEdit);
-  };
-
-  const saveItem = (id) => {
-    let namesArray = [...names];
-    namesArray[id].name = editBoxText;
-    namesArray[id].editable = false;
-    setNames(namesArray);
-    // SHOULD UPDATE THE STATE
-    // SHOULD HIDE THE EDITBOX FIELD
-  };
-
-  const getAllNames = () => {
-    return (
-      <ul>
-        {names.map((x, index) => (
-          <li>
-            {x.editable ? (
-              <EditBox currentItem={editBoxText} handleChange={handleEditBox} />
-            ) : (
-              <span>
-                {x.id} - {x.name} -{" "}
-              </span>
-            )}
-
-            <button onClick={() => editItem(index)}>Edit</button>
-            <button onClick={() => saveItem(index)}>Save</button>
-          </li>
-        ))}
-      </ul>
-    );
-  };
-
-  const handleChange = (e) => {
+  const handleEditBox = (e, input, rowIndex, colIndex) => {
     e.preventDefault();
     const text = e.target.value;
-    setTextBoxValue(text);
-  };
-
-  const handleEditBox = (e) => {
-    e.preventDefault();
-    const text = e.target.value;
+    let copyItems = [...items];
+    copyItems[rowIndex][colIndex] = text;
+    console.table("UP=>>>>>>>>", copyItems);
+    setItems(copyItems);
     setEditBoxText(text);
   };
+
   const handleGridAmount = (e) => {
     e.preventDefault();
     let text = e.target.value;
-    text = text ? parseInt(text) : "";
+    text = text ? parseInt(text) : null;
     setSelectedAmount(text);
+
+    /*     let iterator = () => {
+      console.log("Seleceted Amount =>", text);
+      let objects = [];
+      for (let index = 0; index < text; index++) {
+        objects[index] = [
+          ...Array(text).fill({
+            id: index,
+            name: "XXXXX",
+            editable: true
+          })
+        ];
+      }
+      return objects;
+    };
+    iterator(); */
   };
 
-  /*   let hola = Array(5).fill("");
-  console.log("hola", hola);
-  console.log("Em", hola[2]);
-  hola[2] = 17;
-  console.log("G", hola[2]); */
+  const sortByAsc = () => [...items].sort();
+  const sortByDesc = () => [...items].sort().reverse();
+  const deepSortByAsc = () => [...items].sort((a, b) => a - b);
+  const deepSortbYDesc = () => [...items].sort((b, a) => a - b);
+
+  const handleSorting = () => {
+    //console.table("sortByAsc sortByAsc ==========> : ", sortByAsc());
+    let upperCase = sortByAsc();
+
+    const titleCase = (update) => {
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          update[i][j] = update[i][j].toString().toLowerCase();
+        }
+      }
+      return upperCase;
+    };
+    titleCase(upperCase);
+    setItems(titleCase(upperCase));
+    deepLinkUrl("ASC", "NAME");
+  };
+
+  useEffect(() => {
+    setItems(items);
+  }, [editBoxText]);
 
   const createGrid = (amount) => {
-    //let allItems = [...Array(amount)].map(() => Array(amount).fill("A"));
-    //console.log("GetAlls", allItems);
+    let columnsAllowed = 12;
 
-    return (
-      <table>
-        {[...Array(amount)].map((x, index) => {
+    return items.length > 0 && amount <= columnsAllowed ? (
+      <div>
+        <div>
+          {[...Array(amount)].map((x, index) => {
+            return (
+              <button onClick={handleSorting}>{`Column ${++index}`}</button>
+            );
+          })}
+        </div>
+        {items.map((textbox, rowIndex) => {
           return (
-            <tr>
-              {[...Array(amount)].map((item, idx) => {
-                return <td>{getAllNames()}</td>;
+            <div>
+              {textbox.map((item, colIndex) => {
+                return (
+                  <EditBox
+                    currentItem={item}
+                    handleChange={(e) =>
+                      handleEditBox(e, item, rowIndex, colIndex)
+                    }
+                  />
+                );
               })}
-            </tr>
+            </div>
           );
         })}
-      </table>
+      </div>
+    ) : (
+      <ErrorAmount />
     );
   };
 
   return (
     <div className="App">
-      <label>How many boxes do you want?</label>
-      <input
-        type="text"
-        placeholder="How many boxes?"
-        value={selectedAmount}
-        onChange={handleGridAmount}
-      />
+      <h5>How many boxes do you want?</h5>
       <InputBox
         addItem={addItem}
-        handleChange={handleChange}
-        textBoxValue={textBoxValue}
+        handleChange={handleGridAmount}
+        textBoxValue={selectedAmount}
       />
-
-      {selectedAmount && createGrid(selectedAmount)}
-      {/*       {createGrid(5)}
-      {createGrid(5)}
-      {createGrid(5)}
-      {createGrid(5)} */}
+      {createGrid(selectedAmount)}
     </div>
   );
 }
